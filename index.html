@@ -5,281 +5,140 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Controle de Entrega</title>
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
-    html, body { 
-      margin: 0; 
-      padding: 0;
-      background: #f5f5f5; 
-      height: 100%;
-      width: 100%;
-      overflow-x: hidden;
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
+
+    body {
+      margin: 0;
+      background: #f2f4f7;
+      color: #333;
+    }
+
     header {
-      background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+      background: linear-gradient(135deg, #1e88e5, #1565c0);
       color: #fff;
-      padding: 20px 15px;
+      padding: 16px;
       text-align: center;
       font-size: 20px;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      font-weight: 700;
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 4px 10px rgba(0,0,0,.15);
     }
-    .container { 
-      padding: 15px; 
+
+    .container {
+      padding: 16px;
       max-width: 900px;
-      margin: 0 auto;
+      margin: auto;
     }
+
     .card {
       background: #fff;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      border-left: 5px solid #ccc;
-      transition: box-shadow 0.2s;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.08);
+      border-left: 6px solid #ccc;
     }
-    .card:active { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+
     .card.entregue { border-left-color: #43a047; background: #e8f5e9; }
     .card.nao_entregue { border-left-color: #e53935; background: #fdecea; }
     .card.pendente { border-left-color: #ff9800; background: #fff3e0; }
-    
-    .card h3 { 
-      margin: 0 0 12px; 
-      font-size: 18px; 
-      color: #333;
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      font-weight: 600;
     }
-    .card > div:not(.row) {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 8px;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-    .row { 
-      display: flex; 
-      gap: 10px; 
-      margin-bottom: 12px;
+
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
       flex-wrap: wrap;
     }
-    .row button {
-      flex: 1;
-      min-width: 120px;
-    }
+
     input, select {
       flex: 1;
-      min-width: 120px;
       padding: 12px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #ddd;
-      font-size: 16px;
-      -webkit-appearance: none;
-      appearance: none;
-      background-color: #fff;
+      font-size: 15px;
     }
+
     input:focus, select:focus {
       outline: none;
       border-color: #1e88e5;
-      box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+      box-shadow: 0 0 0 3px rgba(30,136,229,.15);
     }
-    input::placeholder {
-      color: #999;
-    }
+
     button {
-      width: 100%;
-      padding: 14px 16px;
+      flex: 1;
+      padding: 14px;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       background: #1e88e5;
       color: #fff;
-      font-size: 15px;
-      font-weight: bold;
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
+      transition: transform .1s, opacity .1s;
     }
-    button:active { 
-      transform: scale(0.98);
-      opacity: 0.9;
-    }
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+
+    button:active { transform: scale(.97); opacity: .9; }
+
     button.done { background: #43a047; }
-    button.done:active { background: #388e3c; }
     button.nao { background: #e53935; }
-    button.nao:active { background: #c62828; }
-    .status { 
-      margin-top: 10px; 
-      font-size: 13px; 
+    button.del { background: #b71c1c; }
+
+    .status {
+      margin-top: 8px;
+      font-size: 13px;
       padding: 8px;
-      background: rgba(0,0,0,0.05);
-      border-radius: 6px;
+      background: rgba(0,0,0,.05);
+      border-radius: 8px;
+      font-weight: 600;
     }
 
-    /* Busca e Delete */
-    .search-card { margin-bottom: 15px; }
-    #buscaInput { width: 100%; }
-    
-    .btn-delete { background: #f44336 !important; }
-    .btn-delete:active { background: #d32f2f !important; }
-    .btn-delete { 
-      padding: 10px 12px; 
-      font-size: 13px; 
-      flex: 0 0 auto;
-      width: auto;
-    }
-
-    /* Resumo Visual */
-    .stats-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    .stat-box {
-      background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
-      color: white;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .stat-number { font-size: 24px; font-weight: bold; }
-    .stat-label { font-size: 12px; margin-top: 5px; opacity: 0.9; }
-    .stat-percent { font-size: 14px; margin-top: 5px; font-weight: 600; }
-
-    .no-results {
-      text-align: center;
-      padding: 30px 15px;
-      color: #999;
-      font-size: 16px;
-    }
-
-    .print-btn { background: #9c27b0 !important; margin-bottom: 15px; }
-    .print-btn:active { background: #7b1fa2 !important; }
-
-    /* Media Queries para responsividade */
-    @media (max-width: 480px) {
-      html, body { font-size: 14px; }
-      header { 
-        padding: 16px 12px; 
-        font-size: 18px;
-      }
-      .container { padding: 10px; }
-      .card {
-        padding: 12px;
-        margin-bottom: 10px;
-        border-left-width: 4px;
-      }
-      .card h3 { 
-        font-size: 16px; 
-        margin-bottom: 10px;
-      }
-      .card > div:not(.row) {
-        font-size: 13px;
-      }
-      .row { 
-        gap: 8px; 
-        margin-bottom: 10px;
-      }
-      .row button {
-        min-width: 100px;
-        padding: 12px 10px;
-        font-size: 13px;
-      }
-      input, select {
-        padding: 11px;
-        font-size: 16px;
-        min-width: 100px;
-      }
-      button {
-        padding: 12px 12px;
-        font-size: 14px;
-      }
-      .status { 
-        font-size: 12px; 
-        padding: 6px;
-      }
-      .stats-container {
-        grid-template-columns: 1fr 1fr;
-      }
-      .stat-box { padding: 12px; }
-      .stat-number { font-size: 20px; }
-      .stat-label { font-size: 11px; }
-    }
-
-    @media (max-width: 768px) {
+    @media (max-width: 600px) {
+      header { font-size: 18px; padding: 14px; }
       .container { padding: 12px; }
       .card { padding: 14px; }
-    }
-
-    @media (min-width: 769px) {
-      .container { padding: 20px; }
-      .card { padding: 18px; }
-    }
-
-    @media (max-height: 500px) and (orientation: landscape) {
-      header { padding: 10px 15px; font-size: 16px; }
-      .container { padding: 10px; }
-      .card { padding: 10px; margin-bottom: 8px; }
-      button { padding: 10px 12px; font-size: 13px; }
-      input, select { padding: 8px; font-size: 14px; }
-    }
-
-    @media (hover: none) and (pointer: coarse) {
-      button { padding: 16px; }
-      input, select { padding: 13px; }
+      button { font-size: 13px; padding: 12px; }
+      input, select { font-size: 14px; padding: 11px; }
     }
 
     @media print {
-      * { box-shadow: none !important; }
-      body { background: white; margin: 0; padding: 0; }
-      header { display: none; }
-      .container { padding: 0; max-width: 100%; }
-      .card { display: none; }
-      .no-results { display: none; }
-      .print-section {
-        page-break-inside: avoid;
-        margin-bottom: 30px;
-        padding: 0;
-      }
-      .print-title {
-        font-size: 24px;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 15px;
-        color: #333;
-        border-bottom: 2px solid #1e88e5;
-        padding-bottom: 10px;
-      }
-      .print-table {
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea {
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
         width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-      }
-      .print-table th {
-        background-color: #1e88e5;
-        color: white;
-        padding: 10px;
-        text-align: left;
-        font-weight: bold;
-        border: 1px solid #333;
-      }
-      .print-table td {
-        border: 1px solid #333;
-        padding: 10px;
-        height: 40px;
-      }
-      .print-table tr:nth-child(even) {
-        background-color: #f9f9f9;
       }
     }
 
-    #listaPrint { display: none; }
+    #printArea { display: none; }
+
+    #printArea table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      font-size: 12px;
+    }
+
+    #printArea th, #printArea td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+
+    #printArea th { background: #eee; }
   </style>
 </head>
 <body>
@@ -303,23 +162,19 @@
       <h3>Filtrar por condomínio</h3>
       <select id="filtro"></select>
       <div id="contador" class="status"></div>
+      <button id="btnDeletarCondominio" style="margin-top:10px;background:#e53935">🗑️ Deletar condomínio selecionado</button>
     </div>
-
-    <div class="card search-card">
-      <h3>🔍 Buscar entrega</h3>
-      <input id="buscaInput" type="text" placeholder="Digite prédio, porta ou condomínio..." />
     </div>
-
-    <div id="statsContainer" class="stats-container"></div>
 
     <div class="card">
       <h3>📄 Gerar lista para impressão</h3>
-      <button id="btnImprimir" class="print-btn">🖨️ Gerar tabela para imprimir</button>
+      <button id="btnImprimir">Imprimir condomínio selecionado</button>
     </div>
 
     <div id="lista"></div>
-    <div id="listaPrint"></div>
   </div>
+
+  <div id="printArea"></div>
 
   <script>
     let entregas = JSON.parse(localStorage.getItem('entregas')) || [];
@@ -329,13 +184,11 @@
     const portaInput = document.getElementById('portaInput');
     const btnAdicionar = document.getElementById('btnAdicionar');
     const filtroSelect = document.getElementById('filtro');
-    const buscaInput = document.getElementById('buscaInput');
     const lista = document.getElementById('lista');
-    const listaPrint = document.getElementById('listaPrint');
     const contador = document.getElementById('contador');
-    const statsContainer = document.getElementById('statsContainer');
     const btnImprimir = document.getElementById('btnImprimir');
-    let termoBusca = '';
+    const btnDeletarCondominio = document.getElementById('btnDeletarCondominio');
+    const printArea = document.getElementById('printArea');
 
     function salvar() {
       localStorage.setItem('entregas', JSON.stringify(entregas));
@@ -367,8 +220,8 @@
       render();
     }
 
-    function deletar(index) {
-      if (confirm('Tem certeza que quer deletar essa entrega?')) {
+    function deletarEntrega(index) {
+      if (confirm('Deseja deletar esta entrega?')) {
         entregas.splice(index, 1);
         salvar();
         render();
@@ -376,83 +229,78 @@
     }
 
     function imprimirTabela() {
-      if (entregas.length === 0) {
-        alert('Não há entregas para imprimir');
+      const filtro = filtroSelect.value;
+      const listaParaImprimir = filtro
+        ? entregas.filter(e => e.condominio === filtro)
+        : entregas;
+
+      if (listaParaImprimir.length === 0) {
+        alert('Não há entregas para imprimir para este condomínio');
         return;
       }
 
-      listaPrint.innerHTML = '';
-      
-      // Agrupar entregas por condomínio
-      const condominios = [...new Set(entregas.map(e => e.condominio))];
-      
-      condominios.forEach(condominio => {
-        const entregasCondominio = entregas.filter(e => e.condominio === condominio);
-        
-        const secao = document.createElement('div');
-        secao.className = 'print-section';
-        
-        const titulo = document.createElement('div');
-        titulo.className = 'print-title';
-        titulo.textContent = condominio;
-        secao.appendChild(titulo);
-        
-        const tabela = document.createElement('table');
-        tabela.className = 'print-table';
-        
-        // Cabeçalho
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        const headers = ['Prédio', 'Porta', 'Status', 'Assinatura'];
-        headers.forEach(header => {
-          const th = document.createElement('th');
-          th.textContent = header;
-          headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        tabela.appendChild(thead);
-        
-        // Linhas de dados
-        const tbody = document.createElement('tbody');
-        entregasCondominio.forEach(e => {
-          const row = document.createElement('tr');
-          
-          const tdPredio = document.createElement('td');
-          tdPredio.textContent = e.predio;
-          row.appendChild(tdPredio);
-          
-          const tdPorta = document.createElement('td');
-          tdPorta.textContent = e.porta;
-          row.appendChild(tdPorta);
-          
-          const tdStatus = document.createElement('td');
-          tdStatus.textContent = e.status === 'entregue' ? '✓' : e.status === 'nao_entregue' ? '✗' : '';
-          row.appendChild(tdStatus);
-          
-          const tdAssinatura = document.createElement('td');
-          tdAssinatura.textContent = '';
-          row.appendChild(tdAssinatura);
-          
-          tbody.appendChild(row);
-        });
-        tabela.appendChild(tbody);
-        
-        secao.appendChild(tabela);
-        listaPrint.appendChild(secao);
+      printArea.innerHTML = '<h1>Controle de Entrega</h1>';
+      printArea.style.display = 'block';
+
+      const grupos = {};
+      listaParaImprimir.forEach(e => {
+        if (!grupos[e.condominio]) grupos[e.condominio] = [];
+        grupos[e.condominio].push(e);
       });
-      
-      // Abrir diálogo de impressão
-      setTimeout(() => window.print(), 100);
+
+      Object.keys(grupos).forEach(condominio => {
+        let html = `
+          <h2>Condomínio: ${condominio}</h2>
+          <table>
+            <tr>
+              <th>Prédio</th>
+              <th>Porta</th>
+              <th>Status</th>
+              <th>Assinatura</th>
+            </tr>`;
+
+        grupos[condominio].forEach(e => {
+          html += `
+            <tr>
+              <td>${e.predio}</td>
+              <td>${e.porta}</td>
+              <td></td>
+              <td></td>
+            </tr>`;
+        });
+
+        html += '</table>';
+        printArea.innerHTML += html;
+      });
+
+      window.print();
+
+      setTimeout(() => {
+        printArea.style.display = 'none';
+        printArea.innerHTML = '';
+      }, 500);
+    }
+
+    function deletarCondominio() {
+      const condominio = filtroSelect.value;
+      if (!condominio) {
+        alert('Selecione um condomínio para deletar');
+        return;
+      }
+      if (confirm(`Deseja realmente deletar TODAS as entregas do condomínio "${condominio}"?`)) {
+        entregas = entregas.filter(e => e.condominio !== condominio);
+        salvar();
+        render();
+      }
     }
 
     function render() {
       lista.innerHTML = '';
-      statsContainer.innerHTML = '';
 
       const filtro = filtroSelect.value;
       const condominios = [...new Set(entregas.map(e => e.condominio))];
 
-      filtroSelect.innerHTML = '<option value="">Todos</option>';
+      filtroSelect.innerHTML = '<option value="">Selecione</option>';
       condominios.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c;
@@ -461,100 +309,36 @@
       });
       filtroSelect.value = filtro;
 
-      let filtradas = filtro ? entregas.filter(e => e.condominio === filtro) : entregas;
-      
-      // Aplicar filtro de busca
-      if (termoBusca.trim()) {
-        filtradas = filtradas.filter(e => 
-          e.condominio.toLowerCase().includes(termoBusca.toLowerCase()) ||
-          e.predio.toLowerCase().includes(termoBusca.toLowerCase()) ||
-          e.porta.toLowerCase().includes(termoBusca.toLowerCase())
-        );
-      }
-
+      const filtradas = filtro ? entregas.filter(e => e.condominio === filtro) : entregas;
       const total = filtradas.length;
       const entregues = filtradas.filter(e => e.status === 'entregue').length;
-      const naoEntregues = filtradas.filter(e => e.status === 'nao_entregue').length;
-      const pendentes = filtradas.filter(e => e.status === 'pendente').length;
-      
-      const percentualEntrega = total > 0 ? Math.round((entregues / total) * 100) : 0;
-      
-      contador.innerHTML = `
-        <strong>📊 Resumo Geral:</strong><br>
-        ✓ Entregues: ${entregues} | ✗ Não ent.: ${naoEntregues} | ⏳ Pendentes: ${pendentes}<br>
-        <strong>Taxa de entrega: ${percentualEntrega}%</strong>
-      `;
-      
-      // Estatísticas por condomínio
-      if (!filtro) {
-        condominios.forEach(cond => {
-          const entregasCond = entregas.filter(e => e.condominio === cond);
-          const entreguesCond = entregasCond.filter(e => e.status === 'entregue').length;
-          const totalCond = entregasCond.length;
-          const percentCond = totalCond > 0 ? Math.round((entreguesCond / totalCond) * 100) : 0;
-          
-          const stat = document.createElement('div');
-          stat.className = 'stat-box';
-          stat.innerHTML = `
-            <div class="stat-number">${cond}</div>
-            <div class="stat-label">${entreguesCond}/${totalCond}</div>
-            <div class="stat-percent">${percentCond}%</div>
-          `;
-          statsContainer.appendChild(stat);
-        });
-      }
+      contador.textContent = `Entregues: ${entregues} / ${total}`;
 
-      if (filtradas.length === 0) {
-        const noResults = document.createElement('div');
-        noResults.className = 'no-results';
-        noResults.innerHTML = '😕 Nenhuma entrega encontrada';
-        lista.appendChild(noResults);
-      } else {
-        filtradas.forEach(e => {
-          const indexReal = entregas.indexOf(e);
-          const div = document.createElement('div');
-          div.className = `card ${e.status}`;
-          div.innerHTML = `
-            <h3>🏘️ ${e.condominio}</h3>
-            <div><strong>🏢 Prédio:</strong> ${e.predio} | <strong>🚪 Porta:</strong> ${e.porta}</div>
-            <div class="row">
-              <button class="done">✔ Entregue</button>
-              <button class="nao">✖ Não ent.</button>
-              <button class="btn-delete">🗑️ Del</button>
-            </div>
-            <div class="status">
-              <strong>Status:</strong> 
-              <span style="color:${e.status === 'entregue' ? '#43a047' : e.status === 'nao_entregue' ? '#e53935' : '#ff9800'}">
-                ${e.status === 'entregue' ? '✓ ENTREGUE' : e.status === 'nao_entregue' ? '✗ NÃO ENTREGUE' : '⏳ PENDENTE'}
-              </span>
-            </div>
-          `;
-          div.querySelector('.done').onclick = () => marcar(indexReal, 'entregue');
-          div.querySelector('.nao').onclick = () => marcar(indexReal, 'nao_entregue');
-          div.querySelector('.btn-delete').onclick = () => deletar(indexReal);
-          lista.appendChild(div);
-        });
-      }
-    }
-
-    function adicionarComEnter(e) {
-      if (e.key === 'Enter') {
-        adicionar();
-      }
+      filtradas.forEach(e => {
+        const indexReal = entregas.indexOf(e);
+        const div = document.createElement('div');
+        div.className = `card ${e.status}`;
+        div.innerHTML = `
+          <h3>${e.condominio}</h3>
+          <div>Prédio: ${e.predio} | Porta: ${e.porta}</div>
+          <div class="row">
+            <button class="done">Entregue</button>
+            <button class="nao">Não entregue</button>
+            <button style="background:#d32f2f">Deletar</button>
+          </div>
+          <div class="status">Status: ${e.status}</div>
+        `;
+        div.querySelector('.done').onclick = () => marcar(indexReal, 'entregue');
+        div.querySelector('.nao').onclick = () => marcar(indexReal, 'nao_entregue');
+        div.querySelector('button[style]').onclick = () => deletarEntrega(indexReal);
+        lista.appendChild(div);
+      });
     }
 
     btnAdicionar.addEventListener('click', adicionar);
-    condominioInput.addEventListener('keypress', adicionarComEnter);
-    predioInput.addEventListener('keypress', adicionarComEnter);
-    portaInput.addEventListener('keypress', adicionarComEnter);
-    
-    buscaInput.addEventListener('input', (e) => {
-      termoBusca = e.target.value;
-      render();
-    });
-    
     filtroSelect.addEventListener('change', render);
     btnImprimir.addEventListener('click', imprimirTabela);
+    btnDeletarCondominio.addEventListener('click', deletarCondominio);
 
     render();
   </script>
