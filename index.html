@@ -5,110 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Controle de Entrega</title>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    }
-
-    body {
-      margin: 0;
-      background: #f2f4f7;
-      color: #333;
-    }
-
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { margin: 0; background: #f4f6f8; }
     header {
-      background: linear-gradient(135deg, #1e88e5, #1565c0);
-      color: #fff;
-      padding: 16px;
-      text-align: center;
-      font-size: 20px;
-      font-weight: 700;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 4px 10px rgba(0,0,0,.15);
-    }
-
-    .container {
-      padding: 16px;
-      max-width: 900px;
-      margin: auto;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 6px 18px rgba(0,0,0,.08);
-      border-left: 6px solid #ccc;
-    }
-
-    .card.entregue { border-left-color: #43a047; background: #e8f5e9; }
-    .card.nao_entregue { border-left-color: #e53935; background: #fdecea; }
-    .card.pendente { border-left-color: #ff9800; background: #fff3e0; }
-
-    .card h3 {
-      margin: 0 0 10px;
-      font-size: 17px;
-      font-weight: 600;
-    }
-
-    .row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-
-    input, select {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      font-size: 15px;
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: #1e88e5;
-      box-shadow: 0 0 0 3px rgba(30,136,229,.15);
-    }
-
-    button {
-      flex: 1;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
       background: #1e88e5;
       color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform .1s, opacity .1s;
+      padding: 15px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-
-    button:active { transform: scale(.97); opacity: .9; }
-
+    header button {
+      background: #e53935;
+      border: none;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .container { padding: 15px; max-width: 900px; margin: auto; }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      border-left: 6px solid #ccc;
+    }
+    .card.entregue { border-left-color: #43a047; background: #e8f5e9; }
+    .card.nao_entregue { border-left-color: #e53935; background: #fdecea; }
+    .card.pendente { border-left-color: #9e9e9e; background: #f5f5f5; }
+    .card h3 { margin: 0 0 8px; font-size: 16px; }
+    .row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    input, select {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      width: 100%;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #1e88e5;
+      color: #fff;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
     button.done { background: #43a047; }
     button.nao { background: #e53935; }
     button.del { background: #b71c1c; }
+    .status { margin-top: 6px; font-size: 13px; }
 
-    .status {
-      margin-top: 8px;
-      font-size: 13px;
-      padding: 8px;
-      background: rgba(0,0,0,.05);
-      border-radius: 8px;
-      font-weight: 600;
+    /* LOGIN */
+    #loginArea {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-
-    @media (max-width: 600px) {
-      header { font-size: 18px; padding: 14px; }
-      .container { padding: 12px; }
-      .card { padding: 14px; }
-      button { font-size: 13px; padding: 12px; }
-      input, select { font-size: 14px; padding: 11px; }
+    .login-card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
     }
 
     @media print {
@@ -122,225 +92,199 @@
         width: 100%;
       }
     }
-
     #printArea { display: none; }
-
-    #printArea table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 30px;
-      font-size: 12px;
-    }
-
-    #printArea th, #printArea td {
-      border: 1px solid #000;
-      padding: 8px;
-      text-align: left;
-    }
-
+    #printArea table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    #printArea th, #printArea td { border: 1px solid #000; padding: 6px; }
     #printArea th { background: #eee; }
   </style>
 </head>
 <body>
-  <header>📬 Controle de Entrega de Cartas</header>
 
-  <div class="container">
+  <!-- LOGIN -->
+  <div id="loginArea">
+    <div class="login-card">
+      <h2>🔐 Entrar</h2>
+      <input id="loginUser" placeholder="Usuário" />
+      <br><br>
+      <input id="loginPass" type="password" placeholder="Senha" />
+      <br><br>
+      <button onclick="login()">Entrar</button>
+      <p id="loginErro" style="color:red; display:none;">Usuário ou senha inválidos</p>
+    </div>
+  </div>
 
-    <div class="card">
-      <h3>Adicionar entrega</h3>
-      <div class="row">
-        <input id="condominioInput" placeholder="Condomínio" />
+  <!-- APP -->
+  <div id="app" style="display:none;">
+    <header>
+      <span>📬 Controle de Entrega</span>
+      <button onclick="logout()">Sair</button>
+    </header>
+
+    <div class="container">
+
+      <div class="card">
+        <h3>➕ Adicionar entrega</h3>
+        <div class="row">
+          <input id="condominioInput" placeholder="Condomínio" />
+        </div>
+        <div class="row">
+          <input id="predioInput" placeholder="Prédio" />
+          <input id="portaInput" placeholder="Porta" />
+        </div>
+        <button id="btnAdicionar">Adicionar</button>
       </div>
-      <div class="row">
-        <input id="predioInput" placeholder="Prédio" />
-        <input id="portaInput" placeholder="Porta" />
+
+      <div class="card">
+        <h3>🔍 Filtrar por condomínio</h3>
+        <select id="filtro"></select>
+        <div id="contador" class="status"></div>
       </div>
-      <button id="btnAdicionar">Adicionar</button>
-    </div>
 
-    <div class="card">
-      <h3>Filtrar por condomínio</h3>
-      <select id="filtro"></select>
-      <div id="contador" class="status"></div>
-      <button id="btnDeletarCondominio" style="margin-top:10px;background:#e53935">🗑️ Deletar condomínio selecionado</button>
-    </div>
-    </div>
+      <div class="card">
+        <h3>📄 Imprimir</h3>
+        <button id="btnImprimir" type="button">Imprimir condomínio selecionado</button>
+      </div>
 
-    <div class="card">
-      <h3>📄 Gerar lista para impressão</h3>
-      <button id="btnImprimir">Imprimir condomínio selecionado</button>
+      <div id="lista"></div>
     </div>
-
-    <div id="lista"></div>
   </div>
 
   <div id="printArea"></div>
 
   <script>
-    let entregas = JSON.parse(localStorage.getItem('entregas')) || [];
+    /* USUÁRIOS FIXOS */
+    const usuarios = [
+      { user: 'Thiago', pass: '123' },
+      { user: 'Fabio', pass: '123' }
+    ];
 
-    const condominioInput = document.getElementById('condominioInput');
-    const predioInput = document.getElementById('predioInput');
-    const portaInput = document.getElementById('portaInput');
-    const btnAdicionar = document.getElementById('btnAdicionar');
-    const filtroSelect = document.getElementById('filtro');
-    const lista = document.getElementById('lista');
-    const contador = document.getElementById('contador');
-    const btnImprimir = document.getElementById('btnImprimir');
-    const btnDeletarCondominio = document.getElementById('btnDeletarCondominio');
-    const printArea = document.getElementById('printArea');
+    function login() {
+      const u = loginUser.value;
+      const p = loginPass.value;
+      const ok = usuarios.find(x => x.user === u && x.pass === p);
+      if (!ok) {
+        loginErro.style.display = 'block';
+        return;
+      }
+      localStorage.setItem('usuarioLogado', u);
+      iniciar();
+    }
+
+    function logout() {
+      localStorage.removeItem('usuarioLogado');
+      location.reload();
+    }
+
+    function iniciar() {
+      loginArea.style.display = 'none';
+      app.style.display = 'block';
+      carregar();
+    }
+
+    let entregas = [];
+
+    function carregar() {
+      const user = localStorage.getItem('usuarioLogado');
+      entregas = JSON.parse(localStorage.getItem('entregas_' + user)) || [];
+      render();
+    }
 
     function salvar() {
-      localStorage.setItem('entregas', JSON.stringify(entregas));
+      const user = localStorage.getItem('usuarioLogado');
+      localStorage.setItem('entregas_' + user, JSON.stringify(entregas));
     }
 
     function adicionar() {
-      const condominio = condominioInput.value.trim();
-      const predio = predioInput.value.trim();
-      const porta = portaInput.value.trim();
-
-      if (!condominio || !predio || !porta) {
-        alert('Preencha todos os campos');
-        return;
-      }
-
-      entregas.push({ condominio, predio, porta, status: 'pendente' });
+      if (!condominioInput.value || !predioInput.value || !portaInput.value) return;
+      entregas.push({ condominio: condominioInput.value, predio: predioInput.value, porta: portaInput.value, status: 'pendente' });
       salvar();
-
-      condominioInput.value = '';
-      predioInput.value = '';
-      portaInput.value = '';
-
+      condominioInput.value = predioInput.value = portaInput.value = '';
       render();
     }
 
-    function marcar(index, status) {
-      entregas[index].status = status;
+    function marcar(i, s) {
+      entregas[i].status = s;
       salvar();
       render();
     }
 
-    function deletarEntrega(index) {
-      if (confirm('Deseja deletar esta entrega?')) {
-        entregas.splice(index, 1);
-        salvar();
-        render();
-      }
-    }
-
-    function imprimirTabela() {
-      const filtro = filtroSelect.value;
-      const listaParaImprimir = filtro
-        ? entregas.filter(e => e.condominio === filtro)
-        : entregas;
-
-      if (listaParaImprimir.length === 0) {
-        alert('Não há entregas para imprimir para este condomínio');
-        return;
-      }
-
-      printArea.innerHTML = '<h1>Controle de Entrega</h1>';
-      printArea.style.display = 'block';
-
-      const grupos = {};
-      listaParaImprimir.forEach(e => {
-        if (!grupos[e.condominio]) grupos[e.condominio] = [];
-        grupos[e.condominio].push(e);
-      });
-
-      Object.keys(grupos).forEach(condominio => {
-        let html = `
-          <h2>Condomínio: ${condominio}</h2>
-          <table>
-            <tr>
-              <th>Prédio</th>
-              <th>Porta</th>
-              <th>Status</th>
-              <th>Assinatura</th>
-            </tr>`;
-
-        grupos[condominio].forEach(e => {
-          html += `
-            <tr>
-              <td>${e.predio}</td>
-              <td>${e.porta}</td>
-              <td></td>
-              <td></td>
-            </tr>`;
-        });
-
-        html += '</table>';
-        printArea.innerHTML += html;
-      });
-
-      window.print();
-
-      setTimeout(() => {
-        printArea.style.display = 'none';
-        printArea.innerHTML = '';
-      }, 500);
-    }
-
-    function deletarCondominio() {
-      const condominio = filtroSelect.value;
-      if (!condominio) {
-        alert('Selecione um condomínio para deletar');
-        return;
-      }
-      if (confirm(`Deseja realmente deletar TODAS as entregas do condomínio "${condominio}"?`)) {
-        entregas = entregas.filter(e => e.condominio !== condominio);
-        salvar();
-        render();
-      }
+    function deletar(i) {
+      if (!confirm('Deletar entrega?')) return;
+      entregas.splice(i, 1);
+      salvar();
+      render();
     }
 
     function render() {
       lista.innerHTML = '';
+      const f = filtro.value;
 
-      const filtro = filtroSelect.value;
-      const condominios = [...new Set(entregas.map(e => e.condominio))];
+      const condos = [...new Set(entregas.map(e => e.condominio))];
+      filtro.innerHTML = '<option value="">Todos</option>';
+      condos.forEach(c => filtro.innerHTML += `<option value="${c}">${c}</option>`);
+      filtro.value = f;
 
-      filtroSelect.innerHTML = '<option value="">Selecione</option>';
-      condominios.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        filtroSelect.appendChild(opt);
-      });
-      filtroSelect.value = filtro;
+      const list = f ? entregas.filter(e => e.condominio === f) : entregas;
+      contador.textContent = `Total: ${list.length}`;
 
-      const filtradas = filtro ? entregas.filter(e => e.condominio === filtro) : entregas;
-      const total = filtradas.length;
-      const entregues = filtradas.filter(e => e.status === 'entregue').length;
-      contador.textContent = `Entregues: ${entregues} / ${total}`;
-
-      filtradas.forEach(e => {
-        const indexReal = entregas.indexOf(e);
-        const div = document.createElement('div');
-        div.className = `card ${e.status}`;
-        div.innerHTML = `
+      list.forEach(e => {
+        const i = entregas.indexOf(e);
+        const d = document.createElement('div');
+        d.className = 'card ' + e.status;
+        d.innerHTML = `
           <h3>${e.condominio}</h3>
-          <div>Prédio: ${e.predio} | Porta: ${e.porta}</div>
+          <div>🏢 ${e.predio} | 🚪 ${e.porta}</div>
           <div class="row">
             <button class="done">Entregue</button>
-            <button class="nao">Não entregue</button>
-            <button style="background:#d32f2f">Deletar</button>
+            <button class="nao">Não</button>
+            <button class="del">Del</button>
           </div>
-          <div class="status">Status: ${e.status}</div>
-        `;
-        div.querySelector('.done').onclick = () => marcar(indexReal, 'entregue');
-        div.querySelector('.nao').onclick = () => marcar(indexReal, 'nao_entregue');
-        div.querySelector('button[style]').onclick = () => deletarEntrega(indexReal);
-        lista.appendChild(div);
+          <div class="status">${e.status}</div>`;
+        d.querySelector('.done').onclick = () => marcar(i, 'entregue');
+        d.querySelector('.nao').onclick = () => marcar(i, 'nao_entregue');
+        d.querySelector('.del').onclick = () => deletar(i);
+        lista.appendChild(d);
       });
     }
 
-    btnAdicionar.addEventListener('click', adicionar);
-    filtroSelect.addEventListener('change', render);
-    btnImprimir.addEventListener('click', imprimirTabela);
-    btnDeletarCondominio.addEventListener('click', deletarCondominio);
+    function imprimir() {
+      const f = filtro.value;
+      if (!f) {
+        alert('Selecione um condomínio para imprimir');
+        return;
+      }
 
-    render();
+      const list = entregas.filter(e => e.condominio === f);
+      if (list.length === 0) {
+        alert('Não há entregas neste condomínio');
+        return;
+      }
+
+      let html = `<h2>Condomínio: ${f}</h2>`;
+      html += '<table><tr><th>Prédio</th><th>Porta</th><th>Status</th><th>Assinatura</th></tr>';
+
+      list.forEach(e => {
+        html += `<tr>
+          <td>${e.predio}</td>
+          <td>${e.porta}</td>
+          <td>${e.status}</td>
+          <td></td>
+        </tr>`;
+      });
+
+      html += '</table>';
+
+      printArea.style.display = 'block';
+      printArea.innerHTML = html;
+
+      setTimeout(() => window.print(), 100);
+    }
+
+    btnAdicionar.onclick = adicionar;
+    filtro.onchange = render;
+    btnImprimir.onclick = imprimir;
+
+    if (localStorage.getItem('usuarioLogado')) iniciar();
   </script>
 </body>
 </html>
