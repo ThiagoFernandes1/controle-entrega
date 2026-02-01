@@ -192,6 +192,104 @@
       button { padding: 16px; }
       input, select { padding: 13px; }
     }
+
+    /* Estilos para impressão */
+    @media print {
+      * { box-shadow: none !important; }
+      body { background: white; margin: 0; padding: 0; }
+      header { display: none; }
+      .container { padding: 0; max-width: 100%; }
+      .card { display: none; }
+      #listaPrint { display: block; }
+      .print-section {
+        page-break-inside: avoid;
+        margin-bottom: 30px;
+        padding: 0;
+      }
+      .print-title {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 15px;
+        color: #333;
+        border-bottom: 2px solid #1e88e5;
+        padding-bottom: 10px;
+      }
+      .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      .print-table th {
+        background-color: #1e88e5;
+        color: white;
+        padding: 10px;
+        text-align: left;
+        font-weight: bold;
+        border: 1px solid #333;
+      }
+      .print-table td {
+        border: 1px solid #333;
+        padding: 10px;
+        height: 40px;
+      }
+      .print-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+    }
+
+    #listaPrint { display: none; }
+    .print-btn { background: #9c27b0 !important; margin-bottom: 15px; }
+    .print-btn:active { background: #7b1fa2 !important; }
+    
+    .search-card { margin-bottom: 15px; }
+    #buscaInput { width: 100%; }
+    
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .stat-box {
+      background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .stat-box.entregue { background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%); }
+    .stat-box.nao { background: linear-gradient(135deg, #e53935 0%, #c62828 100%); }
+    .stat-box.pendente { background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); }
+    .stat-number { font-size: 24px; font-weight: bold; }
+    .stat-label { font-size: 12px; margin-top: 5px; opacity: 0.9; }
+    .stat-percent { font-size: 14px; margin-top: 5px; font-weight: 600; }
+    
+    .btn-delete { background: #f44336 !important; }
+    .btn-delete:active { background: #d32f2f !important; }
+    .btn-delete { 
+      padding: 10px 12px; 
+      font-size: 13px; 
+      flex: 0 0 auto;
+      width: auto;
+    }
+    
+    .no-results {
+      text-align: center;
+      padding: 30px 15px;
+      color: #999;
+      font-size: 16px;
+    }
+    
+    @media (max-width: 480px) {
+      .stats-container {
+        grid-template-columns: 1fr 1fr;
+      }
+      .stat-box { padding: 12px; }
+      .stat-number { font-size: 20px; }
+      .stat-label { font-size: 11px; }
+    }
   </style>
 </head>
 <body>
@@ -217,7 +315,17 @@
       <div id="contador" class="status"></div>
     </div>
 
+    <div class="card search-card">
+      <h3>🔍 Buscar entrega</h3>
+      <input id="buscaInput" type="text" placeholder="Digite prédio, porta ou condomínio..." />
+    </div>
+
+    <div id="statsContainer" class="stats-container"></div>
+
+    <button id="btnImprimir" class="print-btn">🖨️ Gerar tabela para imprimir</button>
+
     <div id="lista"></div>
+    <div id="listaPrint"></div>
   </div>
 
   <script>
@@ -227,9 +335,14 @@
     const predioInput = document.getElementById('predioInput');
     const portaInput = document.getElementById('portaInput');
     const btnAdicionar = document.getElementById('btnAdicionar');
+    const btnImprimir = document.getElementById('btnImprimir');
     const filtroSelect = document.getElementById('filtro');
+    const buscaInput = document.getElementById('buscaInput');
     const lista = document.getElementById('lista');
+    const listaPrint = document.getElementById('listaPrint');
     const contador = document.getElementById('contador');
+    const statsContainer = document.getElementById('statsContainer');
+    let termoBusca = '';
 
     function salvar() {
       localStorage.setItem('entregas', JSON.stringify(entregas));
@@ -261,8 +374,17 @@
       render();
     }
 
+    function deletar(index) {
+      if (confirm('Tem certeza que quer deletar essa entrega?')) {
+        entregas.splice(index, 1);
+        salvar();
+        render();
+      }
+    }
+
     function render() {
       lista.innerHTML = '';
+      statsContainer.innerHTML = '';
 
       const filtro = filtroSelect.value;
       const condominios = [...new Set(entregas.map(e => e.condominio))];
@@ -276,36 +398,164 @@
       });
       filtroSelect.value = filtro;
 
-      const filtradas = filtro ? entregas.filter(e => e.condominio === filtro) : entregas;
+      let filtradas = filtro ? entregas.filter(e => e.condominio === filtro) : entregas;
+      
+      // Aplicar filtro de busca
+      if (termoBusca.trim()) {
+        filtradas = filtradas.filter(e => 
+          e.condominio.toLowerCase().includes(termoBusca.toLowerCase()) ||
+          e.predio.toLowerCase().includes(termoBusca.toLowerCase()) ||
+          e.porta.toLowerCase().includes(termoBusca.toLowerCase())
+        );
+      }
+
       const total = filtradas.length;
       const entregues = filtradas.filter(e => e.status === 'entregue').length;
-      contador.textContent = `Entregues: ${entregues} / ${total}`;
+      const naoEntregues = filtradas.filter(e => e.status === 'nao_entregue').length;
+      const pendentes = filtradas.filter(e => e.status === 'pendente').length;
+      
+      const percentualEntrega = total > 0 ? Math.round((entregues / total) * 100) : 0;
+      
+      contador.innerHTML = `
+        <strong>📊 Resumo Geral:</strong><br>
+        ✓ Entregues: ${entregues} | ✗ Não ent.: ${naoEntregues} | ⏳ Pendentes: ${pendentes}<br>
+        <strong>Taxa de entrega: ${percentualEntrega}%</strong>
+      `;
+      
+      // Estatísticas por condomínio
+      if (!filtro) {
+        condominios.forEach(cond => {
+          const entregasCond = entregas.filter(e => e.condominio === cond);
+          const entreguesCond = entregasCond.filter(e => e.status === 'entregue').length;
+          const totalCond = entregasCond.length;
+          const percentCond = totalCond > 0 ? Math.round((entreguesCond / totalCond) * 100) : 0;
+          
+          const stat = document.createElement('div');
+          stat.className = 'stat-box';
+          stat.innerHTML = `
+            <div class="stat-number">${cond}</div>
+            <div class="stat-label">${entreguesCond}/${totalCond}</div>
+            <div class="stat-percent">${percentCond}%</div>
+          `;
+          statsContainer.appendChild(stat);
+        });
+      }
 
-      filtradas.forEach(e => {
-        const indexReal = entregas.indexOf(e);
-        const div = document.createElement('div');
-        div.className = `card ${e.status}`;
-        div.innerHTML = `
-          <h3>🏘️ ${e.condominio}</h3>
-          <div><strong>🏢 Prédio:</strong> ${e.predio} | <strong>🚪 Porta:</strong> ${e.porta}</div>
-          <div class="row">
-            <button class="done">✔ Entregue</button>
-            <button class="nao">✖ Não ent.</button>
-          </div>
-          <div class="status">
-            <strong>Status:</strong> 
-            <span style="color:${e.status === 'entregue' ? '#43a047' : e.status === 'nao_entregue' ? '#e53935' : '#ff9800'}">
-              ${e.status === 'entregue' ? '✓ ENTREGUE' : e.status === 'nao_entregue' ? '✗ NÃO ENTREGUE' : '⏳ PENDENTE'}
-            </span>
-          </div>
-        `;
-        div.querySelector('.done').onclick = () => marcar(indexReal, 'entregue');
-        div.querySelector('.nao').onclick = () => marcar(indexReal, 'nao_entregue');
-        lista.appendChild(div);
+      if (filtradas.length === 0) {
+        const noResults = document.createElement('div');
+        noResults.className = 'no-results';
+        noResults.innerHTML = '😕 Nenhuma entrega encontrada';
+        lista.appendChild(noResults);
+      } else {
+        filtradas.forEach(e => {
+          const indexReal = entregas.indexOf(e);
+          const div = document.createElement('div');
+          div.className = `card ${e.status}`;
+          div.innerHTML = `
+            <h3>🏘️ ${e.condominio}</h3>
+            <div><strong>🏢 Prédio:</strong> ${e.predio} | <strong>🚪 Porta:</strong> ${e.porta}</div>
+            <div class="row">
+              <button class="done">✔ Entregue</button>
+              <button class="nao">✖ Não ent.</button>
+              <button class="btn-delete">🗑️ Del</button>
+            </div>
+            <div class="status">
+              <strong>Status:</strong> 
+              <span style="color:${e.status === 'entregue' ? '#43a047' : e.status === 'nao_entregue' ? '#e53935' : '#ff9800'}">
+                ${e.status === 'entregue' ? '✓ ENTREGUE' : e.status === 'nao_entregue' ? '✗ NÃO ENTREGUE' : '⏳ PENDENTE'}
+              </span>
+            </div>
+          `;
+          div.querySelector('.done').onclick = () => marcar(indexReal, 'entregue');
+          div.querySelector('.nao').onclick = () => marcar(indexReal, 'nao_entregue');
+          div.querySelector('.btn-delete').onclick = () => deletar(indexReal);
+          lista.appendChild(div);
+        });
+      }
+    }
+
+    function gerarTabelaPrint() {
+      listaPrint.innerHTML = '';
+      
+      // Agrupar entregas por condomínio
+      const condominios = [...new Set(entregas.map(e => e.condominio))];
+      
+      condominios.forEach(condominio => {
+        const entregasCondominio = entregas.filter(e => e.condominio === condominio);
+        
+        const secao = document.createElement('div');
+        secao.className = 'print-section';
+        
+        const titulo = document.createElement('div');
+        titulo.className = 'print-title';
+        titulo.textContent = condominio;
+        secao.appendChild(titulo);
+        
+        const tabela = document.createElement('table');
+        tabela.className = 'print-table';
+        
+        // Cabeçalho
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        const headers = ['Prédio', 'Porta', 'Status', 'Assinatura'];
+        headers.forEach(header => {
+          const th = document.createElement('th');
+          th.textContent = header;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        tabela.appendChild(thead);
+        
+        // Linhas de dados
+        const tbody = document.createElement('tbody');
+        entregasCondominio.forEach(e => {
+          const row = document.createElement('tr');
+          
+          const tdPredio = document.createElement('td');
+          tdPredio.textContent = e.predio;
+          row.appendChild(tdPredio);
+          
+          const tdPorta = document.createElement('td');
+          tdPorta.textContent = e.porta;
+          row.appendChild(tdPorta);
+          
+          const tdStatus = document.createElement('td');
+          tdStatus.textContent = e.status === 'entregue' ? '✓' : e.status === 'nao_entregue' ? '✗' : '';
+          row.appendChild(tdStatus);
+          
+          const tdAssinatura = document.createElement('td');
+          tdAssinatura.textContent = '';
+          row.appendChild(tdAssinatura);
+          
+          tbody.appendChild(row);
+        });
+        tabela.appendChild(tbody);
+        
+        secao.appendChild(tabela);
+        listaPrint.appendChild(secao);
       });
+      
+      // Abrir diálogo de impressão
+      setTimeout(() => window.print(), 100);
+    }
+
+    function adicionarComEnter(e) {
+      if (e.key === 'Enter') {
+        adicionar();
+      }
     }
 
     btnAdicionar.addEventListener('click', adicionar);
+    condominioInput.addEventListener('keypress', adicionarComEnter);
+    predioInput.addEventListener('keypress', adicionarComEnter);
+    portaInput.addEventListener('keypress', adicionarComEnter);
+    
+    buscaInput.addEventListener('input', (e) => {
+      termoBusca = e.target.value;
+      render();
+    });
+    
+    btnImprimir.addEventListener('click', gerarTabelaPrint);
     filtroSelect.addEventListener('change', render);
 
     render();
