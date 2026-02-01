@@ -2,10 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5" />
-  <meta name="theme-color" content="#1e88e5" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Controle de Entrega</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
@@ -123,6 +120,48 @@
       border-radius: 6px;
     }
 
+    /* Busca e Delete */
+    .search-card { margin-bottom: 15px; }
+    #buscaInput { width: 100%; }
+    
+    .btn-delete { background: #f44336 !important; }
+    .btn-delete:active { background: #d32f2f !important; }
+    .btn-delete { 
+      padding: 10px 12px; 
+      font-size: 13px; 
+      flex: 0 0 auto;
+      width: auto;
+    }
+
+    /* Resumo Visual */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .stat-box {
+      background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .stat-number { font-size: 24px; font-weight: bold; }
+    .stat-label { font-size: 12px; margin-top: 5px; opacity: 0.9; }
+    .stat-percent { font-size: 14px; margin-top: 5px; font-weight: 600; }
+
+    .no-results {
+      text-align: center;
+      padding: 30px 15px;
+      color: #999;
+      font-size: 16px;
+    }
+
+    .print-btn { background: #9c27b0 !important; margin-bottom: 15px; }
+    .print-btn:active { background: #7b1fa2 !important; }
+
     /* Media Queries para responsividade */
     @media (max-width: 480px) {
       html, body { font-size: 14px; }
@@ -165,6 +204,12 @@
         font-size: 12px; 
         padding: 6px;
       }
+      .stats-container {
+        grid-template-columns: 1fr 1fr;
+      }
+      .stat-box { padding: 12px; }
+      .stat-number { font-size: 20px; }
+      .stat-label { font-size: 11px; }
     }
 
     @media (max-width: 768px) {
@@ -177,30 +222,26 @@
       .card { padding: 18px; }
     }
 
-    /* Landscape mode */
     @media (max-height: 500px) and (orientation: landscape) {
       header { padding: 10px 15px; font-size: 16px; }
       .container { padding: 10px; }
       .card { padding: 10px; margin-bottom: 8px; }
-      .card h3 { font-size: 14px; margin-bottom: 6px; }
       button { padding: 10px 12px; font-size: 13px; }
       input, select { padding: 8px; font-size: 14px; }
     }
 
-    /* Touch-friendly adjustments */
     @media (hover: none) and (pointer: coarse) {
       button { padding: 16px; }
       input, select { padding: 13px; }
     }
 
-    /* Estilos para impressão */
     @media print {
       * { box-shadow: none !important; }
       body { background: white; margin: 0; padding: 0; }
       header { display: none; }
       .container { padding: 0; max-width: 100%; }
       .card { display: none; }
-      #listaPrint { display: block; }
+      .no-results { display: none; }
       .print-section {
         page-break-inside: avoid;
         margin-bottom: 30px;
@@ -239,57 +280,6 @@
     }
 
     #listaPrint { display: none; }
-    .print-btn { background: #9c27b0 !important; margin-bottom: 15px; }
-    .print-btn:active { background: #7b1fa2 !important; }
-    
-    .search-card { margin-bottom: 15px; }
-    #buscaInput { width: 100%; }
-    
-    .stats-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    .stat-box {
-      background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
-      color: white;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .stat-box.entregue { background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%); }
-    .stat-box.nao { background: linear-gradient(135deg, #e53935 0%, #c62828 100%); }
-    .stat-box.pendente { background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); }
-    .stat-number { font-size: 24px; font-weight: bold; }
-    .stat-label { font-size: 12px; margin-top: 5px; opacity: 0.9; }
-    .stat-percent { font-size: 14px; margin-top: 5px; font-weight: 600; }
-    
-    .btn-delete { background: #f44336 !important; }
-    .btn-delete:active { background: #d32f2f !important; }
-    .btn-delete { 
-      padding: 10px 12px; 
-      font-size: 13px; 
-      flex: 0 0 auto;
-      width: auto;
-    }
-    
-    .no-results {
-      text-align: center;
-      padding: 30px 15px;
-      color: #999;
-      font-size: 16px;
-    }
-    
-    @media (max-width: 480px) {
-      .stats-container {
-        grid-template-columns: 1fr 1fr;
-      }
-      .stat-box { padding: 12px; }
-      .stat-number { font-size: 20px; }
-      .stat-label { font-size: 11px; }
-    }
   </style>
 </head>
 <body>
@@ -322,7 +312,10 @@
 
     <div id="statsContainer" class="stats-container"></div>
 
-    <button id="btnImprimir" class="print-btn">🖨️ Gerar tabela para imprimir</button>
+    <div class="card">
+      <h3>📄 Gerar lista para impressão</h3>
+      <button id="btnImprimir" class="print-btn">🖨️ Gerar tabela para imprimir</button>
+    </div>
 
     <div id="lista"></div>
     <div id="listaPrint"></div>
@@ -335,13 +328,13 @@
     const predioInput = document.getElementById('predioInput');
     const portaInput = document.getElementById('portaInput');
     const btnAdicionar = document.getElementById('btnAdicionar');
-    const btnImprimir = document.getElementById('btnImprimir');
     const filtroSelect = document.getElementById('filtro');
     const buscaInput = document.getElementById('buscaInput');
     const lista = document.getElementById('lista');
     const listaPrint = document.getElementById('listaPrint');
     const contador = document.getElementById('contador');
     const statsContainer = document.getElementById('statsContainer');
+    const btnImprimir = document.getElementById('btnImprimir');
     let termoBusca = '';
 
     function salvar() {
@@ -380,6 +373,76 @@
         salvar();
         render();
       }
+    }
+
+    function imprimirTabela() {
+      if (entregas.length === 0) {
+        alert('Não há entregas para imprimir');
+        return;
+      }
+
+      listaPrint.innerHTML = '';
+      
+      // Agrupar entregas por condomínio
+      const condominios = [...new Set(entregas.map(e => e.condominio))];
+      
+      condominios.forEach(condominio => {
+        const entregasCondominio = entregas.filter(e => e.condominio === condominio);
+        
+        const secao = document.createElement('div');
+        secao.className = 'print-section';
+        
+        const titulo = document.createElement('div');
+        titulo.className = 'print-title';
+        titulo.textContent = condominio;
+        secao.appendChild(titulo);
+        
+        const tabela = document.createElement('table');
+        tabela.className = 'print-table';
+        
+        // Cabeçalho
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        const headers = ['Prédio', 'Porta', 'Status', 'Assinatura'];
+        headers.forEach(header => {
+          const th = document.createElement('th');
+          th.textContent = header;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        tabela.appendChild(thead);
+        
+        // Linhas de dados
+        const tbody = document.createElement('tbody');
+        entregasCondominio.forEach(e => {
+          const row = document.createElement('tr');
+          
+          const tdPredio = document.createElement('td');
+          tdPredio.textContent = e.predio;
+          row.appendChild(tdPredio);
+          
+          const tdPorta = document.createElement('td');
+          tdPorta.textContent = e.porta;
+          row.appendChild(tdPorta);
+          
+          const tdStatus = document.createElement('td');
+          tdStatus.textContent = e.status === 'entregue' ? '✓' : e.status === 'nao_entregue' ? '✗' : '';
+          row.appendChild(tdStatus);
+          
+          const tdAssinatura = document.createElement('td');
+          tdAssinatura.textContent = '';
+          row.appendChild(tdAssinatura);
+          
+          tbody.appendChild(row);
+        });
+        tabela.appendChild(tbody);
+        
+        secao.appendChild(tabela);
+        listaPrint.appendChild(secao);
+      });
+      
+      // Abrir diálogo de impressão
+      setTimeout(() => window.print(), 100);
     }
 
     function render() {
@@ -474,71 +537,6 @@
       }
     }
 
-    function gerarTabelaPrint() {
-      listaPrint.innerHTML = '';
-      
-      // Agrupar entregas por condomínio
-      const condominios = [...new Set(entregas.map(e => e.condominio))];
-      
-      condominios.forEach(condominio => {
-        const entregasCondominio = entregas.filter(e => e.condominio === condominio);
-        
-        const secao = document.createElement('div');
-        secao.className = 'print-section';
-        
-        const titulo = document.createElement('div');
-        titulo.className = 'print-title';
-        titulo.textContent = condominio;
-        secao.appendChild(titulo);
-        
-        const tabela = document.createElement('table');
-        tabela.className = 'print-table';
-        
-        // Cabeçalho
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        const headers = ['Prédio', 'Porta', 'Status', 'Assinatura'];
-        headers.forEach(header => {
-          const th = document.createElement('th');
-          th.textContent = header;
-          headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        tabela.appendChild(thead);
-        
-        // Linhas de dados
-        const tbody = document.createElement('tbody');
-        entregasCondominio.forEach(e => {
-          const row = document.createElement('tr');
-          
-          const tdPredio = document.createElement('td');
-          tdPredio.textContent = e.predio;
-          row.appendChild(tdPredio);
-          
-          const tdPorta = document.createElement('td');
-          tdPorta.textContent = e.porta;
-          row.appendChild(tdPorta);
-          
-          const tdStatus = document.createElement('td');
-          tdStatus.textContent = e.status === 'entregue' ? '✓' : e.status === 'nao_entregue' ? '✗' : '';
-          row.appendChild(tdStatus);
-          
-          const tdAssinatura = document.createElement('td');
-          tdAssinatura.textContent = '';
-          row.appendChild(tdAssinatura);
-          
-          tbody.appendChild(row);
-        });
-        tabela.appendChild(tbody);
-        
-        secao.appendChild(tabela);
-        listaPrint.appendChild(secao);
-      });
-      
-      // Abrir diálogo de impressão
-      setTimeout(() => window.print(), 100);
-    }
-
     function adicionarComEnter(e) {
       if (e.key === 'Enter') {
         adicionar();
@@ -555,8 +553,8 @@
       render();
     });
     
-    btnImprimir.addEventListener('click', gerarTabelaPrint);
     filtroSelect.addEventListener('change', render);
+    btnImprimir.addEventListener('click', imprimirTabela);
 
     render();
   </script>
