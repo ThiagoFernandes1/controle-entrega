@@ -69,8 +69,10 @@ body *{visibility:hidden}
 </div>
 
 <div class="card">
-  <h3>🔍 Filtro por condomínio</h3>
-  <select id="filtro" onchange="render()"></select>
+  <h3>🔍 Filtros</h3>
+  <select id="filtroCondominio" onchange="render()"></select>
+  <br><br>
+  <select id="filtroBloco" onchange="render()"></select>
   <div id="contador" class="status"></div>
 </div>
 
@@ -87,22 +89,22 @@ body *{visibility:hidden}
 <div id="printArea"></div>
 
 <script>
-const usuarios=[{user:'Thiago',pass:'123'},{user:'Fabio',pass:'123'}];
+const usuarios=[{user:'Thiago',pass:'1234'},{user:'Fabio',pass:'123'}];
 let entregas=[];
 
 /* PRÉ-CADASTRO */
 function preloadCondominio(){
   const key='entregas_'+localStorage.user;
   let dados=JSON.parse(localStorage.getItem(key))||[];
-  if(dados.some(e=>e.condominio==='Praça das Américas 662'))return;
-  for(let i=1;i<=176;i++){
-    dados.push({
-      condominio:'Praça das Américas 662',
-      bloco:'01',
-      porta:String(i).padStart(3,'0'),
-      status:'pendente'
-    });
-  }
+  const cond='Praça das Américas 662';
+  ['01','02','03'].forEach(bloco=>{
+    for(let i=1;i<=176;i++){
+      const apto=String(i).padStart(3,'0');
+      if(!dados.some(e=>e.condominio===cond&&e.bloco===bloco&&e.porta===apto)){
+        dados.push({condominio:cond,bloco,porta:apto,status:'pendente'});
+      }
+    }
+  });
   localStorage.setItem(key,JSON.stringify(dados));
 }
 
@@ -139,28 +141,30 @@ function adicionar(){
 function marcar(i,s){entregas[i].status=s;salvar();render()}
 function deletar(i){if(confirm('Excluir entrega?')){entregas.splice(i,1);salvar();render()}}
 
-function ordenar(l){
-  return l.sort((a,b)=>{
-    if(a.bloco!==b.bloco)return a.bloco.localeCompare(b.bloco);
-    return a.porta.localeCompare(b.porta,undefined,{numeric:true});
-  });
-}
-
 function render(){
-  const f=filtro.value;
-  const c=[...new Set(entregas.map(e=>e.condominio))];
-  filtro.innerHTML='<option value="">Todos</option>';
-  c.forEach(x=>filtro.innerHTML+=`<option>${x}</option>`);
-  filtro.value=f;
+  const fc=filtroCondominio.value;
+  const fb=filtroBloco.value;
 
-  let list=f?entregas.filter(e=>e.condominio===f):entregas;
-  list=ordenar(list);
+  filtroCondominio.innerHTML='<option value="">Todos condomínios</option>';
+  [...new Set(entregas.map(e=>e.condominio))].forEach(c=>{
+    filtroCondominio.innerHTML+=`<option>${c}</option>`;
+  });
+  filtroCondominio.value=fc;
+
+  filtroBloco.innerHTML='<option value="">Todos blocos</option>';
+  [...new Set(entregas.map(e=>e.bloco))].forEach(b=>{
+    filtroBloco.innerHTML+=`<option>${b}</option>`;
+  });
+  filtroBloco.value=fb;
+
+  let list=entregas;
+  if(fc) list=list.filter(e=>e.condominio===fc);
+  if(fb) list=list.filter(e=>e.bloco===fb);
+
+  list.sort((a,b)=>a.porta.localeCompare(b.porta,undefined,{numeric:true}));
 
   lista.innerHTML='';
-  const ent=list.filter(e=>e.status==='entregue').length;
-  const pen=list.filter(e=>e.status==='pendente').length;
-  const nao=list.filter(e=>e.status==='nao_entregue').length;
-  contador.innerHTML=`✔️ ${ent} | ⏳ ${pen} | ❌ ${nao}`;
+  contador.innerHTML=`Total: ${list.length}`;
 
   list.forEach(e=>{
     const i=entregas.indexOf(e);
@@ -179,18 +183,16 @@ function render(){
 }
 
 function imprimir(){
-  const f=filtro.value;
-  if(!f)return alert('Selecione um condomínio');
-  const list=entregas.filter(e=>e.condominio===f);
-  let html=`<h2>Condomínio: ${f}</h2>`;
-  [...new Set(list.map(e=>e.bloco))].forEach(b=>{
-    html+=`<h3>Bloco ${b}</h3><table>
-    <tr><th>Apto</th><th>Status</th><th>Assinatura</th></tr>`;
-    list.filter(e=>e.bloco===b).forEach(e=>{
-      html+=`<tr><td>${e.porta}</td><td>${e.status}</td><td></td></tr>`;
-    });
-    html+='</table>';
+  const fc=filtroCondominio.value;
+  const fb=filtroBloco.value;
+  if(!fc||!fb)return alert('Selecione condomínio e bloco');
+  const list=entregas.filter(e=>e.condominio===fc&&e.bloco===fb);
+  let html=`<h2>${fc} — Bloco ${fb}</h2>
+  <table><tr><th>Apto</th><th>Status</th><th>Assinatura</th></tr>`;
+  list.forEach(e=>{
+    html+=`<tr><td>${e.porta}</td><td>${e.status}</td><td></td></tr>`;
   });
+  html+='</table>';
   printArea.innerHTML=html;
   window.print();
 }
