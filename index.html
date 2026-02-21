@@ -2,26 +2,36 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Controle de Entregas</title>
 
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabaseUrl = 'https://quizexqrmwugokprnnwf.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1aXpleHFybXd1Z29rcHJubndmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2MzA2NTMsImV4cCI6MjA4NzIwNjY1M30.RLxguaWi-BBAEdzqO0L0uw0lV5FscDrv9m-lTxl5siU';
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+</script>
+
 <style>
-*{box-sizing:border-box;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box;font-family:Arial,sans-serif}
 body{margin:0;background:#f4f6f8}
 header{background:#1e88e5;color:#fff;padding:14px;display:flex;justify-content:space-between;align-items:center;font-weight:bold;position:sticky;top:0}
 .container{padding:12px;max-width:900px;margin:auto}
-.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 4px 10px rgba(0,0,0,.08);border-left:6px solid #9e9e9e}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 4px 10px rgba(0,0,0,.08);border-left:6px solid #ccc}
 .card.entregue{border-left-color:#43a047;background:#e8f5e9}
 .card.nao_entregue{border-left-color:#e53935;background:#fdecea}
-input,select{width:100%;padding:14px;font-size:16px;border-radius:10px;border:1px solid #ccc}
-button{width:100%;padding:14px;font-size:16px;border:none;border-radius:12px;background:#1e88e5;color:#fff;font-weight:bold}
+.card.pendente{border-left-color:#9e9e9e;background:#f5f5f5}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;font-size:14px}
+button{background:#1e88e5;color:#fff;border:none;font-weight:bold;cursor:pointer}
 button.done{background:#43a047}
 button.nao{background:#e53935}
 button.del{background:#b71c1c}
-.row{display:flex;gap:8px;flex-wrap:wrap}
 .status{margin-top:8px;font-size:14px}
 #loginArea{min-height:100vh;display:flex;align-items:center;justify-content:center}
-.login-card{background:#fff;padding:22px;border-radius:16px;width:100%;max-width:360px;box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.login-card{background:#fff;padding:20px;border-radius:14px;max-width:360px;width:100%;box-shadow:0 6px 16px rgba(0,0,0,.15)}
 @media print{
 body *{visibility:hidden}
 #printArea,#printArea *{visibility:visible}
@@ -58,155 +68,183 @@ body *{visibility:hidden}
 
 <div class="container">
 
-<div class="card">
-  <h3>➕ Nova Entrega</h3>
-  <input id="condominioInput" placeholder="Condomínio">
-  <br><br>
-  <input id="blocoInput" placeholder="Bloco">
-  <br><br>
-  <input id="portaInput" placeholder="Apartamento">
-  <br><br>
-  <button onclick="adicionar()">Adicionar</button>
-</div>
+  <div class="card">
+    <h3>➕ Adicionar entrega</h3>
+    <input id="condominioInput" placeholder="Condomínio">
+    <div class="row">
+      <input id="predioInput" placeholder="Bloco">
+      <input id="portaInput" placeholder="Apartamento">
+    </div>
+    <button onclick="adicionar()">Adicionar</button>
+  </div>
 
-<div class="card">
-  <h3>🔍 Filtros</h3>
-  <select id="filtroCondominio" onchange="render()"></select>
-  <br><br>
-  <select id="filtroBloco" onchange="render()"></select>
-  <div id="contador" class="status"></div>
-</div>
+  <div class="card">
+    <h3>🔍 Filtros</h3>
+    <select id="filtroCondominio" onchange="render()"></select>
+    <select id="filtroBloco" onchange="render()"></select>
+    <div id="contador" class="status"></div>
+  </div>
 
-<div class="card">
-  <h3>🖨️ Imprimir</h3>
-  <button onclick="imprimir()">Imprimir por bloco</button>
-</div>
+  <div class="card">
+    <h3>🖨️ Imprimir</h3>
+    <button onclick="imprimir()">Imprimir por bloco</button>
+  </div>
 
-<div id="lista"></div>
-
+  <div id="lista"></div>
 </div>
 </div>
 
 <div id="printArea"></div>
 
 <script>
-const usuarios=[{user:'Thiago',pass:'1234'},{user:'Fabio',pass:'123'}];
-let entregas=[];
+const usuarios = [
+  {user:'Thiago', pass:'123'},
+  {user:'Fabio', pass:'123'}
+];
+let entregas = [];
 
-/* PRÉ-CADASTRO */
-function preloadCondominio(){
-  const key='entregas_'+localStorage.user;
-  let dados=JSON.parse(localStorage.getItem(key))||[];
-  const cond='Praça das Américas 662';
-  ['01','02','03'].forEach(bloco=>{
-    for(let i=1;i<=176;i++){
-      const apto=String(i).padStart(3,'0');
-      if(!dados.some(e=>e.condominio===cond&&e.bloco===bloco&&e.porta===apto)){
-        dados.push({condominio:cond,bloco,porta:apto,status:'pendente'});
-      }
-    }
-  });
-  localStorage.setItem(key,JSON.stringify(dados));
-}
-
-function login(){
-  const ok=usuarios.find(u=>u.user===loginUser.value&&u.pass===loginPass.value);
-  if(!ok){loginErro.style.display='block';return}
-  localStorage.user=ok.user;
+// Login/Logout
+function login() {
+  if (!usuarios.find(u=>u.user===loginUser.value && u.pass===loginPass.value)) {
+    loginErro.style.display='block';
+    return;
+  }
+  localStorage.setItem('usuarioLogado', loginUser.value);
   iniciar();
 }
+function logout() {
+  localStorage.removeItem('usuarioLogado');
+  location.reload();
+}
 
-function logout(){localStorage.clear();location.reload()}
-
-function iniciar(){
+// Inicialização
+async function iniciar() {
   loginArea.style.display='none';
   app.style.display='block';
-  preloadCondominio();
-  entregas=JSON.parse(localStorage.getItem('entregas_'+localStorage.user))||[];
+  await popularCondominio(); // popula apenas se ainda não existe
+  await carregar();
+  atualizarHora();
+}
+
+// Popula o condomínio apenas uma vez
+async function popularCondominio() {
+  const condominio = 'Praça das Américas';
+  const blocos = [1,2,3];
+  const totalApartamentos = 176;
+
+  // Checa se já existe no banco
+  const { data: existentes } = await supabaseClient.from('entregas').select('*').eq('condominio', condominio).limit(1);
+  if (existentes.length > 0) return; // já populado
+
+  const registros = [];
+  blocos.forEach(bloco => {
+    for (let i=1;i<=totalApartamentos;i++){
+      const apto = String(i).padStart(3,'0');
+      registros.push({ condominio, predio: `Bloco ${bloco}`, porta: apto, status: 'pendente' });
+    }
+  });
+  await supabaseClient.from('entregas').insert(registros);
+  console.log('Condomínio populado automaticamente!');
+}
+
+// Carregar entregas
+async function carregar() {
+  const { data } = await supabaseClient.from('entregas').select('*').order('predio',{ascending:true}).order('porta',{ascending:true});
+  entregas = data || [];
   render();
 }
 
-function salvar(){localStorage.setItem('entregas_'+localStorage.user,JSON.stringify(entregas))}
-
-function adicionar(){
-  if(!condominioInput.value||!blocoInput.value||!portaInput.value)return;
-  entregas.push({
-    condominio:condominioInput.value,
-    bloco:blocoInput.value.toUpperCase(),
-    porta:portaInput.value,
-    status:'pendente'
+// Adicionar entrega manual
+async function adicionar() {
+  if(!condominioInput.value || !predioInput.value || !portaInput.value) return;
+  await supabaseClient.from('entregas').insert({
+    condominio: condominioInput.value,
+    predio: predioInput.value,
+    porta: portaInput.value,
+    status: 'pendente'
   });
-  salvar();condominioInput.value=blocoInput.value=portaInput.value='';render();
+  condominioInput.value = predioInput.value = portaInput.value = '';
+  carregar();
 }
 
-function marcar(i,s){entregas[i].status=s;salvar();render()}
-function deletar(i){if(confirm('Excluir entrega?')){entregas.splice(i,1);salvar();render()}}
+// Marcar e deletar
+async function marcar(id,status){
+  await supabaseClient.from('entregas').update({status}).eq('id',id);
+  carregar();
+}
+async function deletar(id){
+  if(!confirm('Deletar entrega?')) return;
+  await supabaseClient.from('entregas').delete().eq('id',id);
+  carregar();
+}
 
+// Renderizar lista e filtros
 function render(){
-  const fc=filtroCondominio.value;
-  const fb=filtroBloco.value;
-
-  filtroCondominio.innerHTML='<option value="">Todos condomínios</option>';
-  [...new Set(entregas.map(e=>e.condominio))].forEach(c=>{
-    filtroCondominio.innerHTML+=`<option>${c}</option>`;
-  });
-  filtroCondominio.value=fc;
-
-  filtroBloco.innerHTML='<option value="">Todos blocos</option>';
-  [...new Set(entregas.map(e=>e.bloco))].forEach(b=>{
-    filtroBloco.innerHTML+=`<option>${b}</option>`;
-  });
-  filtroBloco.value=fb;
-
-  let list=entregas;
-  if(fc) list=list.filter(e=>e.condominio===fc);
-  if(fb) list=list.filter(e=>e.bloco===fb);
-
-  list.sort((a,b)=>a.porta.localeCompare(b.porta,undefined,{numeric:true}));
-
   lista.innerHTML='';
-  contador.innerHTML=`Total: ${list.length}`;
+
+  const fc = filtroCondominio.value;
+  const fb = filtroBloco.value;
+
+  const condominios = [...new Set(entregas.map(e=>e.condominio))];
+  filtroCondominio.innerHTML = '<option value="">Todos</option>';
+  condominios.forEach(c=>filtroCondominio.innerHTML+=`<option>${c}</option>`);
+  filtroCondominio.value = fc;
+
+  const blocos = [...new Set(entregas.map(e=>e.predio))];
+  filtroBloco.innerHTML = '<option value="">Todos</option>';
+  blocos.forEach(b=>filtroBloco.innerHTML+=`<option>${b}</option>`);
+  filtroBloco.value = fb;
+
+  let list = entregas;
+  if(fc) list = list.filter(e=>e.condominio===fc);
+  if(fb) list = list.filter(e=>e.predio===fb);
+
+  contador.innerText = `Total: ${list.length}`;
 
   list.forEach(e=>{
-    const i=entregas.indexOf(e);
-    lista.innerHTML+=`
-    <div class="card ${e.status}">
-      <h3>${e.condominio} — Bloco ${e.bloco}</h3>
+    const d=document.createElement('div');
+    d.className='card '+e.status;
+    d.innerHTML=`
+      <h3>${e.condominio} — ${e.predio}</h3>
       <div>🚪 Apto ${e.porta}</div>
       <div class="row">
-        <button class="done" onclick="marcar(${i},'entregue')">Entregue</button>
-        <button class="nao" onclick="marcar(${i},'nao_entregue')">Não</button>
-        <button class="del" onclick="deletar(${i})">Del</button>
+        <button class="done">Entregue</button>
+        <button class="nao">Não</button>
+        <button class="del">Del</button>
       </div>
       <div class="status">${e.status}</div>
-    </div>`;
+    `;
+    d.querySelector('.done').onclick=()=>marcar(e.id,'entregue');
+    d.querySelector('.nao').onclick=()=>marcar(e.id,'nao_entregue');
+    d.querySelector('.del').onclick=()=>deletar(e.id);
+    lista.appendChild(d);
   });
 }
 
+// Imprimir
 function imprimir(){
   const fc=filtroCondominio.value;
   const fb=filtroBloco.value;
-  if(!fc||!fb)return alert('Selecione condomínio e bloco');
-  const list=entregas.filter(e=>e.condominio===fc&&e.bloco===fb);
-  let html=`<h2>${fc} — Bloco ${fb}</h2>
-  <table><tr><th>Apto</th><th>Status</th><th>Assinatura</th></tr>`;
-  list.forEach(e=>{
-    html+=`<tr><td>${e.porta}</td><td>${e.status}</td><td></td></tr>`;
-  });
+  if(!fc || !fb) return alert('Selecione condomínio e bloco');
+  const list=entregas.filter(e=>e.condominio===fc && e.predio===fb);
+  let html=`<h2>${fc} — ${fb}</h2>
+    <table><tr><th>Apto</th><th>Status</th><th>Assinatura</th></tr>`;
+  list.forEach(e=>html+=`<tr><td>${e.porta}</td><td>${e.status}</td><td></td></tr>`);
   html+='</table>';
   printArea.innerHTML=html;
   window.print();
 }
-/* DATA E HORA */
+
+// Atualizar hora
 function atualizarHora(){
   const d=new Date();
   datetime.innerText=d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR');
 }
 setInterval(atualizarHora,1000);
-atualizarHora();
 
+// Inicialização automática
+if(localStorage.getItem('usuarioLogado')) iniciar();
 </script>
 
 </body>
-
 </html>
